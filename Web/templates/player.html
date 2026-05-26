@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MK Player</title>
+<link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet">
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#000;
+color:#fff;
+font-family:'Space Grotesk',sans-serif;
+}
+
+.container{
+max-width:1200px;
+margin:0 auto;
+padding:20px;
+}
+
+.video-wrapper{
+position:relative;
+width:100%;
+background:#1a1a1a;
+border-radius:12px;
+overflow:hidden;
+}
+
+video{
+width:100%;
+height:auto;
+}
+
+.controls{
+padding:20px;
+background:#1a1a1a;
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+justify-content:center;
+}
+
+.btn{
+padding:12px 24px;
+background:#0071e3;
+color:#fff;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+text-decoration:none;
+display:inline-block;
+transition:0.3s;
+}
+
+.btn:hover{
+background:#005bb5;
+transform:translateY(-2px);
+}
+
+.info{
+padding:20px;
+text-align:center;
+}
+
+.info h2{
+margin-bottom:10px;
+}
+
+.audio-tracks{
+margin:20px 0;
+}
+
+select{
+padding:10px;
+background:#2a2a2a;
+color:#fff;
+border:1px solid #0071e3;
+border-radius:8px;
+font-size:16px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="video-wrapper">
+<video id="player" class="video-js" controls preload="auto" data-setup='{}'>
+<source src="" type="video/mp4" id="videoSource">
+</video>
+</div>
+
+<div class="info">
+<h2 id="fileName">Loading...</h2>
+<p id="fileSize"></p>
+</div>
+
+<div class="audio-tracks" id="audioTracks" style="display:none;">
+<label>🎵 Audio Track: </label>
+<select id="audioSelect" onchange="changeAudio()"></select>
+</div>
+
+<div class="controls">
+<a href="#" class="btn" id="vlcBtn">📱 Open in VLC</a>
+<a href="#" class="btn" id="mxBtn">📱 Open in MX Player</a>
+<a href="#" class="btn" id="playitBtn">📱 Open in PlayIt</a>
+<a href="#" class="btn" id="downloadBtn">📥 Download File</a>
+</div>
+</div>
+
+<script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+<script>
+const fileId = window.location.pathname.split('/').pop();
+const videoUrl = `/dl/${fileId}`;
+
+document.getElementById('videoSource').src = videoUrl;
+document.getElementById('downloadBtn').href = videoUrl;
+
+// VLC Intent
+document.getElementById('vlcBtn').href = `vlc://${window.location.origin}${videoUrl}`;
+// MX Player Intent
+document.getElementById('mxBtn').href = `intent://${window.location.host}${videoUrl}#Intent;package=com.mxtech.videoplayer.ad;S.title=MK Player;end`;
+// PlayIt Intent
+document.getElementById('playitBtn').href = `playit://${window.location.origin}${videoUrl}`;
+
+const player = videojs('player');
+
+// Load audio tracks
+player.ready(function(){
+const tracks = player.audioTracks();
+if(tracks.length > 1){
+document.getElementById('audioTracks').style.display = 'block';
+const select = document.getElementById('audioSelect');
+for(let i = 0; i < tracks.length; i++){
+const option = document.createElement('option');
+option.value = i;
+option.text = tracks[i].label || `Track ${i+1}`;
+select.appendChild(option);
+}
+}
+});
+
+function changeAudio(){
+const select = document.getElementById('audioSelect');
+const tracks = player.audioTracks();
+for(let i = 0; i < tracks.length; i++){
+tracks[i].enabled = i == select.value;
+}
+}
+
+// Fetch file info
+fetch(`/api/info/${fileId}`)
+.then(r => r.json())
+.then(data => {
+document.getElementById('fileName').textContent = data.name;
+document.getElementById('fileSize').textContent = `Size: ${data.size}`;
+});
+</script>
+</body>
+</html>
