@@ -1,0 +1,23 @@
+services:
+    - type: web
+    name: mk-file-stream-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m bot.main
+    envVars:
+            - key: API_ID
+        sync: false
+            - key: API_HASH
+        sync: false
+            - key: BOT_TOKEN
+        sync: false
+            - key: LOG_CHANNEL
+        sync: false
+            - key: AUTH_PASSWORD
+        sync: false
+            - key: OWNER_ID
+        sync: false
+            - key: MONGO_URL
+        sync: false
+            - key: BASE_URL
+        sync: false
